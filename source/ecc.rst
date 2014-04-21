@@ -75,7 +75,7 @@ https://console.aws.amazon.com/ec2/home?region=ap-northeast-1#s=SecurityGroups
 
 .. image:: port22.png
 
-7.  左下隅の `Add Rule`` ボタンをクリック、新しく現れた2行目のruleについて ``Type`` から ``All traffic`` を選択、 ``Source`` メニューから ``My IP`` を選択
+7.  左下隅の `Add Rule`` ボタンをクリック、新しく現れた2行目のruleについて ``Type`` から ``All traffic`` を選択、 ``Source`` メニューから ``Custom IP`` を選択、"s"などを入力するとサジェストされるGroup IDの中から ``jubatus_handson`` を選択
 8. 2つのルールが正しく表示されているのを確認して右下隅の ``Save`` ボタンをクリック
 
 .. image:: portall.png

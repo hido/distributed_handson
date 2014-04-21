@@ -78,13 +78,9 @@ AMI
 
 なお、それぞれの役割は以下のようになっています。
 
-- server
+- data_generator
 
-  csvデータを登録してデータ生成器として働く
-
-- source.py
-
-  データ生成器からデータを取得してMQにenqueueする。
+  CSVデータを登録してデータ生成し、MQにenqueueする。
 
 - jubatus_update.py 10.X.X.X
 
@@ -107,36 +103,51 @@ AMI
 
     ubuntu@[manager]:~/jubatus_distributed_handson$ jubaanomaly -f config.json
 
+
 * shell2
 
 ::
 
-    ubuntu@[manager]:~/jubatus_distributed_handson$ ./server
+    ubuntu@[manager]:~/jubatus_distributed_handson$ ./data_generator --stream normal --filename test.csv --count 100000 --speed 5
 
 
 * shell3
 
 ::
 
-    ubuntu@[manager]:~/jubatus_distributed_handson$ python source.py --stream normal --filename test.csv --count 10000 --speed 1
+    ubuntu@[manager]:~/jubatus_distributed_handson$ python jubatus_update.py --host localhost  --stream normal
+
+* shell4
+
+::
+
+    ubuntu@[manager]:~/jubatus_distributed_handson$ python jubatus_analyze.py --host localhost --stream normal
+
+最後のshell4に異常スコアが表示されていると思います。
+1.0に近ければ正常、それよりも大きければ大きいほど異常度が高いということになります。
+これは、学習している途中なので、結果はタイミングによって変わります。
+
+複数のストリーム
+------------------
+
+data_generatorは、入力されたCSVファイルの各変数列の平均値と分散を計算し、それに従った正規分布乱数によって人工データを生成しています。
+上記では ``test.csv`` を ``normal`` というstream名で扱っていましたが、データの分布が異なる ``anomaly.csv`` というファイルを使って
+``anomaly`` という別のストリームを生成し、LOF値を計算してみましょう。
+
+* shell2
+
+::
+
+    ubuntu@[manager]:~/jubatus_distributed_handson$ ./data_generator --stream anomaly --filename anomaly.csv --count 100000 --speed 5
 
 
 * shell4
 
 ::
 
-    ubuntu@[manager]:~/jubatus_distributed_handson$ python jubatus_update.py --host localhost  --stream normal
+    ubuntu@[manager]:~/jubatus_distributed_handson$ python jubatus_analyze.py --host localhost --stream anomaly
 
-* shell5
-
-::
-
-    ubuntu@[manager]:~/jubatus_distributed_handson$ python jubatus_analyze.py --host localhost --stream normal
-
-最後のshell5に異常スコアが表示されていると思います。
-1.0に近ければ正常、それよりも大きければ大きいほど異常度が高いということになります。
-これは、学習している途中なので、結果はタイミングによって変わります。
-
+``normal`` を用いた場合と異なり、定常的に高い値が生成されていることが分かるかと思います。
 
 分散構成
 -----------------
@@ -183,7 +194,7 @@ jubatusは、この名前が同じもの同士、MIXを行おうとします。
     10.XX.XX.XX_9199
     10.XX.XX.YY_9199
 
-``sensor_nn members`` に二台のマシンが登録されているでしょうか？ここで表示されているprivate IPアドレスは、 ``s1`` , ``s2`` のものです。
+``jubatus_anomaly members`` に二台のマシンが登録されているでしょうか？ここで表示されているprivate IPアドレスは、 ``s1`` , ``s2`` のものです。
 jubatusはzookeeperを介して自動的にサーバのIPアドレス、ポートを管理します。利用者はzookeeperの場所を意識するだけでよいようになります。
 この後、proxyを立ち上げます。
 
@@ -192,14 +203,14 @@ jubatusはzookeeperを介して自動的にサーバのIPアドレス、ポー�
     ubuntu@[c1]:~/jubatus_distributed_handson$ jubaanomaly_proxy --zookeeper 10.X.X.X:2181
     ubuntu@[c2]:~/jubatus_distributed_handson$ jubaanomaly_proxy --zookeeper 10.X.X.X:2181
 
-    ubuntu@[c1]:~$ python jubatus_update.py --host 10.X.X.X
-    ubuntu@[c2]:~$ python jubatus_update.py --host 10.X.X.X
+    ubuntu@[c1]:~$ python jubatus_update.py --host 10.X.X.X --stream normal
+    ubuntu@[c2]:~$ python jubatus_update.py --host 10.X.X.X --stream normal
 
 ここまでで分散できていることを確認しましょう。
 
 ::
 
-    ubuntu@[c1]:~/jubatus_distributed_handson$ python jubatus_analyze.py
+    ubuntu@[c1]:~/jubatus_distributed_handson$ python jubatus_analyze.py --host 10.X.X.X --stream normal
 
 
 MIXの影響を見る
@@ -212,16 +223,17 @@ interval_secで指定された時間経過するかのどちらかが契機と�
 
     jubaanomaly --zookeeper 10.X.X.X:2181 --name jubatus_anomaly --interval_sec 300
 
-source.pyは、seedオプションで、乱数の制御が出来ます。また、speedは毎秒最大していされた個数をenqueueします。countで、
-何個投入したら止めるかを指定します。
-
-::
-
-    ubuntu@[manager]:~/jubatus_distributed_handson$ python source.py --seed 1 --speed 5 --count 10000
 
 MIXが起きる前と、起きた後で、結果が変わることを確認して下さい。
 
 ::
 
-    ubuntu@[c1]:~/jubatus_distributed_handson$ python jubatus_analyze.py
+    ubuntu@[c1]:~/jubatus_distributed_handson$ python jubatus_analyze.py --host 10.X.X.X --stream normal
 
+
+応用編
+--------
+
+次は複数のストリームをc1とc2でそれぞれ受け取って処理するような構成を分散で試してみてください。
+
+それができれば、お持ちの分析してみたいデータを適切なCSVファイルに変換し、scpコマンドでmanagerに転送して実際に分析してみてください。
