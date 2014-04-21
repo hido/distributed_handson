@@ -193,7 +193,7 @@ jubatusは、この名前が同じもの同士、MIXを行おうとします。
 
 ::
 
-    ubuntu@[manager]:~/jubatus_distributed_handson$ ./data_generator --stream normal --filename anomaly.csv --count 100000 --speed 5
+    ubuntu@[manager]:~/jubatus_distributed_handson$ ./data_generator --stream anomaly --filename anomaly.csv --count 100000 --speed 5
 
     ubuntu@[s1]:~/jubatus_distributed_handson$ jubaanomaly --zookeeper 10.X.X.X:2181 -n jubatus_anomaly
     ubuntu@[s2]:~/jubatus_distributed_handson$ jubaanomaly --zookeeper 10.X.X.X:2181 -n jubatus_anomaly
@@ -218,14 +218,14 @@ jubatusはzookeeperを介して自動的にサーバのIPアドレス、ポー�
     ubuntu@[c1]:~/jubatus_distributed_handson$ jubaanomaly_proxy --zookeeper 10.X.X.X:2181
     ubuntu@[c2]:~/jubatus_distributed_handson$ jubaanomaly_proxy --zookeeper 10.X.X.X:2181
 
-    ubuntu@[c1]:~$ python jubatus_update.py --host 10.X.X.X --stream normal
-    ubuntu@[c2]:~$ python jubatus_update.py --host 10.X.X.X --stream normal
+    ubuntu@[c1]:~$ python jubatus_update.py --host 10.X.X.X --stream anomaly
+    ubuntu@[c2]:~$ python jubatus_update.py --host 10.X.X.X --stream anomaly
 
 ここまでで分散できていることを確認しましょう。
 
 ::
 
-    ubuntu@[c1]:~/jubatus_distributed_handson$ python jubatus_analyze.py --host 10.X.X.X --stream normal
+    ubuntu@[c1]:~/jubatus_distributed_handson$ python jubatus_analyze.py --host 10.X.X.X --stream anomaly
 
 
 MIXの影響を見る
