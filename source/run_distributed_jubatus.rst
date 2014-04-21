@@ -193,7 +193,7 @@ jubatusは、この名前が同じもの同士、MIXを行おうとします。
 
 ::
 
-    ubuntu@[manager]:~/jubatus_distributed_handson$ ./data_generator --stream anomaly --filename anomaly.csv --count 100000 --speed 5
+    ubuntu@[manager]:~/jubatus_distributed_handson$ ./data_generator --stream normal --filename anomaly.csv --count 100000 --speed 5
 
     ubuntu@[s1]:~/jubatus_distributed_handson$ jubaanomaly --zookeeper 10.X.X.X:2181 -n jubatus_anomaly
     ubuntu@[s2]:~/jubatus_distributed_handson$ jubaanomaly --zookeeper 10.X.X.X:2181 -n jubatus_anomaly
