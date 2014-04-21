@@ -135,7 +135,7 @@ Jubatusサーバの学習に相当するUPDATE処理を担当するクライア�
     ubuntu@[manager]:~/jubatus_distributed_handson$ python jubatus_analyze.py --host localhost --stream normal
 
 
-Jubatusサーバの予測に相当するUPDATE処理を担当するクライアントのPythonスクリプトです。 ``--host`` で指定したホストで動作するMQから ``--stream`` で指定した名前のストリームデータを取得して、ローカルで動作する `` jubaanomaly`` （この場合はshell1で立ち上げたもの）にANALYZEクエリを投げ、各サンプルの異常度スコアを計算します。
+Jubatusサーバの予測に相当するANALYZE処理を担当するクライアントのPythonスクリプトです。 ``--host`` で指定したホストで動作するMQから ``--stream`` で指定した名前のストリームデータを取得して、ローカルで動作する `` jubaanomaly`` （この場合はshell1で立ち上げたもの）にANALYZEクエリを投げ、各サンプルの異常度スコアを計算します。
 
 
 成功すれば、最後のshell4に異常スコアが表示されていると思います。
