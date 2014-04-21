@@ -243,7 +243,7 @@ MIXが起きる前と、起きた後で、結果が変わることを確認し�
 
 ::
 
-    ubuntu@[c1]:~/jubatus_distributed_handson$ python jubatus_analyze.py --host 10.X.X.X --stream normal
+    ubuntu@[c1]:~/jubatus_distributed_handson$ python jubatus_analyze.py --host 10.X.X.X --stream anomaly
 
 
 応用編
