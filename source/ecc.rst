@@ -97,7 +97,7 @@ AMIはEC2用の仮想マシンイメージであり、今回の分散ハンズ�
 4. 右側に現れる検索欄に ``jubatus`` を入力
 5. 複数候補が現れる中からタイトルが ``4th_jubatus_handson`` から始まるものを選び、 ``Select`` ボタンをクリック
 6. Step 2: Choose an Instance Typeにおいて左側のメニューから3段目の ``General purpose`` を選択
-7. 右表1段目の ``m1.small`` を選択肢、 右下隅の ``Next: Configure Instance Details`` ボタンをクリック
+7. 右表1段目の ``m1.small`` を選択し、 右下隅の ``Next: Configure Instance Details`` ボタンをクリック
 
 .. image:: m1small.png
 
