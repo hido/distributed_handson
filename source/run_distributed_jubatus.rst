@@ -78,18 +78,20 @@ AMI
 
 なお、それぞれの役割は以下のようになっています。
 
-- data_generator
+- data_generator 
 
   CSVデータを登録してデータ生成し、MQにenqueueする。
+  ストリーム名、CSVファイル名、生成個数、生成速度を指定することが出来る。
 
-- jubatus_update.py 10.X.X.X
+- jubatus_update.py
 
-  10.X.X.Xにあるキューserverから、dequeueして、localhost のjubaanomalyに学習させる。
+  localhost(もしくは10.X.X.X)にあるMQサーバから、dequeueして、localhost のjubaanomalyに学習させる。
   jubatus_update.pyからみるとjubaanomalyは必ずlocalhostにあるように見える。
   
-- jubatus_analyze.py [id]
+- jubatus_analyze.py 
 
-  idの近傍を取得する。
+  localhost(もしくは10.X.X.X)にあるMQサーバから、dequeueして、localhost のjubaanomalyで結果を求める。
+  jubatus_analyze.pyからみるとjubaanomalyは必ずlocalhostにあるように見える。
 
 一台構成で動かしてみます。
 その前に、SSHの接続を増やすか、screen, byobuなどで4つのセッションを確保してください。
@@ -104,11 +106,16 @@ AMI
     ubuntu@[manager]:~/jubatus_distributed_handson$ jubaanomaly -f config.json
 
 
+単一のjubaanomalyサーバを起動しています。config.jsonはその設定パラメータを含むファイルです。
+
 * shell2
 
 ::
 
     ubuntu@[manager]:~/jubatus_distributed_handson$ ./data_generator --stream normal --filename test.csv --count 100000 --speed 5
+
+
+データ生成器を起動しています。 ``--stream`` でストリーム名、 ``--filename`` で元にするCSVファイル名、 ``--count`` で生成する合計サンプル数、 ``--speed`` で1秒辺りの生成個数を指定しています。
 
 
 * shell3
@@ -117,13 +124,21 @@ AMI
 
     ubuntu@[manager]:~/jubatus_distributed_handson$ python jubatus_update.py --host localhost  --stream normal
 
+
+Jubatusサーバの学習に相当するUPDATE処理を担当するクライアントのPythonスクリプトです。 ``--host`` で指定したホストで動作するMQから ``--stream`` で指定した名前のストリームデータを取得して、ローカルで動作する `` jubaanomaly`` （この場合はshell1で立ち上げたもの）にUPDATEクエリを投げ、正常データを学習します。
+
+
 * shell4
 
 ::
 
     ubuntu@[manager]:~/jubatus_distributed_handson$ python jubatus_analyze.py --host localhost --stream normal
 
-最後のshell4に異常スコアが表示されていると思います。
+
+Jubatusサーバの予測に相当するUPDATE処理を担当するクライアントのPythonスクリプトです。 ``--host`` で指定したホストで動作するMQから ``--stream`` で指定した名前のストリームデータを取得して、ローカルで動作する `` jubaanomaly`` （この場合はshell1で立ち上げたもの）にANALYZEクエリを投げ、各サンプルの異常度スコアを計算します。
+
+
+成功すれば、最後のshell4に異常スコアが表示されていると思います。
 1.0に近ければ正常、それよりも大きければ大きいほど異常度が高いということになります。
 これは、学習している途中なので、結果はタイミングによって変わります。
 
@@ -147,15 +162,15 @@ data_generatorは、入力されたCSVファイルの各変数列の平均値と
 
     ubuntu@[manager]:~/jubatus_distributed_handson$ python jubatus_analyze.py --host localhost --stream anomaly
 
-``normal`` を用いた場合と異なり、定常的に高い値が生成されていることが分かるかと思います。
+``normal`` を用いた最初の例と異なり、定常的に高い値が生成されていることが分かるかと思います。
 
 分散構成
 -----------------
 
-次に分散構成を取ります。
-まずは、manager上にzookeeperプロセスを立てます。
+次に分散構成を取ります。念のため、1台構成でmanager上で起動した全てのプロセスを終了しておきましょう。
+まずは、manager上にzookeeperプロセスを起動します。
 jubatusは、サーバ同士、およびプロキシプロセス同士の発見、死活監視をzookeeperを介して行っています。
-本来、zookeeperをSPoFにしないように3台以上で構成しますが、今回は簡易的に1台構成で行っています。
+本来、zookeeperを単一障害点にしないように3台以上で構成しますが、今回は簡易的に1台構成で行っています。
 
 ::
 
@@ -178,7 +193,7 @@ jubatusは、この名前が同じもの同士、MIXを行おうとします。
 
 ::
 
-    ubuntu@[manager]:~/jubatus_distributed_handson$ python source.py
+    ubuntu@[manager]:~/jubatus_distributed_handson$ ./data_generator --stream anomaly --filename anomaly.csv --count 100000 --speed 5
 
     ubuntu@[s1]:~/jubatus_distributed_handson$ jubaanomaly --zookeeper 10.X.X.X:2181 -n jubatus_anomaly
     ubuntu@[s2]:~/jubatus_distributed_handson$ jubaanomaly --zookeeper 10.X.X.X:2181 -n jubatus_anomaly
